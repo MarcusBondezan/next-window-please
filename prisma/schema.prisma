@@ -1,0 +1,34 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Customer {
+  id        Int     @default(autoincrement()) @id
+  name      String
+  accounts  Account[]
+}
+
+model Account {
+  id                Int     @default(autoincrement()) @id
+  customer_id       Int
+  customer          Customer @relation(fields: [customer_id], references: [id])
+  source_transfers  Transfer[] @relation("source_account")
+  target_transfers  Transfer[] @relation("target_account")
+  balance           Float
+  created_at        DateTime @db.Timestamptz() @default(now())
+}
+
+model Transfer {
+  id                  Int   @default(autoincrement()) @id
+  source_account_id   Int 
+  source_account      Account @relation("source_account", fields: [source_account_id], references: [id])
+  target_account_id   Int
+  target_account      Account @relation("target_account", fields: [target_account_id], references: [id])
+  amount              Float
+  created_at          DateTime  @db.Timestamptz() @default(now())
+}
