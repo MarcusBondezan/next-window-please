@@ -11,24 +11,30 @@ model Customer {
   id        Int     @default(autoincrement()) @id
   name      String
   accounts  Account[]
+
+  @@map("customer")
 }
 
 model Account {
-  id                Int     @default(autoincrement()) @id
-  customer_id       Int
-  customer          Customer @relation(fields: [customer_id], references: [id])
-  source_transfers  Transfer[] @relation("source_account")
-  target_transfers  Transfer[] @relation("target_account")
+  id                Int         @default(autoincrement()) @id
+  customerId        Int         @map("customer_id")
+  customer          Customer    @relation(fields: [customerId], references: [id])
+  sourceTransfers   Transfer[]  @relation("sourceAccount")
+  targetTransfers   Transfer[]  @relation("targetAccount")
   balance           Float
-  created_at        DateTime @db.Timestamptz() @default(now())
+  createdAt         DateTime    @db.Timestamptz() @default(now()) @map("created_at")
+
+  @@map("account")
 }
 
 model Transfer {
-  id                  Int   @default(autoincrement()) @id
-  source_account_id   Int 
-  source_account      Account @relation("source_account", fields: [source_account_id], references: [id])
-  target_account_id   Int
-  target_account      Account @relation("target_account", fields: [target_account_id], references: [id])
-  amount              Float
-  created_at          DateTime  @db.Timestamptz() @default(now())
+  id                Int       @default(autoincrement()) @id
+  sourceAccountId   Int       @map("source_account_id")
+  sourceAccount     Account   @relation("sourceAccount", fields: [sourceAccountId], references: [id])
+  targetAccountId   Int       @map("target_account_id")
+  targetAccount     Account   @relation("targetAccount", fields: [targetAccountId], references: [id])
+  amount            Float
+  createdAt         DateTime  @db.Timestamptz() @default(now()) @map("created_at")
+
+  @@map("transfer")
 }
