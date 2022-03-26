@@ -30,4 +30,16 @@ export class AccountService {
 
     return newAccount;
   }
+
+  async getAccountBalance(accountId: number): Promise<Account> {
+    const account = await this.prisma.account.findUnique({
+      where: { id: accountId },
+    });
+
+    if (!account) {
+      throw new NotFoundException('Account not found');
+    }
+
+    return account;
+  }
 }

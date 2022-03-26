@@ -26,11 +26,7 @@ describe('AccountService', () => {
     prisma = module.get<PrismaService>(PrismaService);
   });
 
-  it('should be defined', () => {
-    expect(accountService).toBeDefined();
-  });
-
-  it('should throw a NotFoundCustomerException if customer does not exist', async () => {
+  it('should throw a NotFoundException if trying to create account with inexistent customer', async () => {
     const createAccountDto = new CreateAccountDto(10, 38.0);
     await expect(
       accountService.createAccount(createAccountDto),
@@ -58,5 +54,13 @@ describe('AccountService', () => {
     await accountService.createAccount(createAccountDto);
 
     expect(prisma.account.create).toBeCalled();
+  });
+
+  it('should throw a NotFoundException when trying to get balance of an inexistent account', async () => {
+    prisma.account.findUnique = jest.fn().mockReturnValueOnce(null);
+
+    await expect(accountService.getAccountBalance(1)).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
   });
 });
