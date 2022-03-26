@@ -1,8 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Account } from '@prisma/client';
-import { CustomerFacade } from '../customer/customer.facade';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateAccountDto } from './dto/create-account.dto';
+import { CustomerFacade } from '../customer/customer.facade';
+import { CreateAccountInputDto } from './dto/create-account-input.dto';
+import {
+  AccountNotFoundException,
+  CustomerNotFoundException,
+} from '../shared/exception';
 
 @Injectable()
 export class AccountService {
@@ -11,19 +15,21 @@ export class AccountService {
     private customerFacade: CustomerFacade,
   ) {}
 
-  async createAccount(createAccountDto: CreateAccountDto): Promise<Account> {
+  async createAccount(
+    createAccountInputDto: CreateAccountInputDto,
+  ): Promise<Account> {
     const customer = await this.customerFacade.getCustomerById(
-      createAccountDto.customerId,
+      createAccountInputDto.customerId,
     );
 
     if (!customer) {
-      throw new NotFoundException('Customer not found');
+      throw new CustomerNotFoundException();
     }
 
     const newAccount = await this.prisma.account.create({
       data: {
         customerId: customer.id,
-        balance: createAccountDto.initialDepositAmount,
+        balance: createAccountInputDto.initialDepositAmount,
       },
       include: { customer: true },
     });
@@ -37,9 +43,13 @@ export class AccountService {
     });
 
     if (!account) {
-      throw new NotFoundException('Account not found');
+      throw new AccountNotFoundException();
     }
 
     return account;
+  }
+
+  async getAccountById(accountId: number): Promise<Account> {
+    return this.prisma.account.findUnique({ where: { id: accountId } });
   }
 }

@@ -9,7 +9,7 @@ import {
 } from '@nestjs/swagger';
 import { AccountService } from './account.service';
 import { AccountDto } from './dto/account.dto';
-import { CreateAccountDto } from './dto/create-account.dto';
+import { CreateAccountInputDto } from './dto/create-account-input.dto';
 import { GetAccountBalanceParams } from './dto/get-account-balance.params';
 
 @ApiTags('account')
@@ -19,14 +19,16 @@ export class AccountController {
 
   @ApiOperation({ summary: 'Create account' })
   @ApiCreatedResponse({
-    description: 'Successfully created customer account',
+    description: 'When successfully created customer account',
     type: AccountDto,
   })
-  @ApiBadRequestResponse({ description: 'Invalid parameters values' })
-  @ApiNotFoundResponse({ description: 'Customer not found' })
+  @ApiBadRequestResponse({
+    description: 'When there are invalid parameters values',
+  })
+  @ApiNotFoundResponse({ description: 'When customer is not found' })
   @Post()
   async createAccount(
-    @Body() createAccountDto: CreateAccountDto,
+    @Body() createAccountDto: CreateAccountInputDto,
   ): Promise<AccountDto> {
     const account = await this.accountService.createAccount(createAccountDto);
     return AccountDto.fromAccount(account);
@@ -34,11 +36,11 @@ export class AccountController {
 
   @ApiOperation({ summary: 'Retrieve account balance' })
   @ApiOkResponse({
-    description: 'Successfully retrivied account balance',
+    description: 'When successfully retrieved account balance',
     type: AccountDto,
   })
-  @ApiBadRequestResponse({ description: 'Invalid account id value' })
-  @ApiNotFoundResponse({ description: 'Account not found' })
+  @ApiBadRequestResponse({ description: 'When account id value is invalid' })
+  @ApiNotFoundResponse({ description: 'When the account is not found' })
   @Get(':accountId')
   async getAccountBalance(
     @Param() params: GetAccountBalanceParams,

@@ -1,5 +1,11 @@
 import { INestApplication, Injectable, OnModuleInit } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
+
+export type AccountWithCustomer = Prisma.AccountGetPayload<{
+  include: {
+    customer: true;
+  };
+}>;
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {

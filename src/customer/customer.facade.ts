@@ -6,7 +6,7 @@ import { CustomerService } from './customer.service';
 export class CustomerFacade {
   constructor(private customerService: CustomerService) {}
 
-  async getCustomerById(customerId: number): Promise<Customer> {
+  public async getCustomerById(customerId: number): Promise<Customer> {
     return this.customerService.getCustomerById(customerId);
   }
 }

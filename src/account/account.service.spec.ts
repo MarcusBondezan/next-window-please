@@ -1,10 +1,13 @@
-import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Account, Customer } from '@prisma/client';
-import { PrismaService } from '../../prisma/prisma.service';
-import { CustomerFacade } from '../../customer/customer.facade';
-import { AccountService } from '../account.service';
-import { CreateAccountDto } from '../dto/create-account.dto';
+import { PrismaService } from '../prisma/prisma.service';
+import { AccountService } from './account.service';
+import { CustomerFacade } from '../customer/customer.facade';
+import {
+  CustomerNotFoundException,
+  AccountNotFoundException,
+} from '../shared/exception';
+import { CreateAccountInputDto } from './dto/create-account-input.dto';
 
 describe('AccountService', () => {
   let accountService: AccountService;
@@ -27,10 +30,10 @@ describe('AccountService', () => {
   });
 
   it('should throw a NotFoundException if trying to create account with inexistent customer', async () => {
-    const createAccountDto = new CreateAccountDto(10, 38.0);
+    const createAccountInputDto = new CreateAccountInputDto(10, 38.0);
     await expect(
-      accountService.createAccount(createAccountDto),
-    ).rejects.toBeInstanceOf(NotFoundException);
+      accountService.createAccount(createAccountInputDto),
+    ).rejects.toBeInstanceOf(CustomerNotFoundException);
   });
 
   it('should create an account if customer exists', async () => {
@@ -39,19 +42,19 @@ describe('AccountService', () => {
       name: 'John',
     };
 
-    const createAccountDto = new CreateAccountDto(customer.id, 38.0);
+    const createAccountInputDto = new CreateAccountInputDto(customer.id, 38.0);
 
     const newAccount: Account = {
       id: 1,
       customerId: customer.id,
-      balance: createAccountDto.initialDepositAmount,
+      balance: createAccountInputDto.initialDepositAmount,
       createdAt: new Date(),
     };
 
     mockCustomerFacade.getCustomerById = jest.fn().mockReturnValue(customer);
     prisma.account.create = jest.fn().mockReturnValueOnce(newAccount);
 
-    await accountService.createAccount(createAccountDto);
+    await accountService.createAccount(createAccountInputDto);
 
     expect(prisma.account.create).toBeCalled();
   });
@@ -60,7 +63,7 @@ describe('AccountService', () => {
     prisma.account.findUnique = jest.fn().mockReturnValueOnce(null);
 
     await expect(accountService.getAccountBalance(1)).rejects.toBeInstanceOf(
-      NotFoundException,
+      AccountNotFoundException,
     );
   });
 });

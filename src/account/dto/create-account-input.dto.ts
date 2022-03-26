@@ -1,9 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsNumber, Min } from 'class-validator';
+import { IsInt, IsNumber } from 'class-validator';
 
-export class CreateAccountDto {
+export class CreateAccountInputDto {
   @IsInt()
-  @Min(1)
   @ApiProperty()
   customerId: number;
 
