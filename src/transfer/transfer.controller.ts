@@ -1,8 +1,9 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Param, Get } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
   ApiNotFoundResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiPreconditionFailedResponse,
   ApiTags,
@@ -10,6 +11,8 @@ import {
 import { TransferService } from './transfer.service';
 import { TransferInputDto } from './dto/transfer-input.dto';
 import { TransferResultDto } from './dto/transfer-result.dto';
+import { TransferHistoryParams } from './dto/transfer-history.params';
+import { TransferHistoryItemDto } from './dto/transfer-history-item.dto';
 
 @ApiTags('transfer')
 @Controller('transfer')
@@ -17,10 +20,12 @@ export class TransferController {
   constructor(private readonly transferService: TransferService) {}
 
   @ApiOperation({
-    summary: 'Transfer money from a source account to a target account',
+    summary:
+      'Transfer amounts between any two accounts, including those owned by different customers',
   })
   @ApiCreatedResponse({
     description: 'When successfully transferred money between accounts',
+    type: TransferResultDto,
   })
   @ApiBadRequestResponse({
     description:
@@ -38,5 +43,24 @@ export class TransferController {
     @Body() transferInputDto: TransferInputDto,
   ): Promise<TransferResultDto> {
     return this.transferService.transfer(transferInputDto);
+  }
+
+  @ApiOperation({
+    summary: 'Retrieve transfer history for a given account',
+  })
+  @ApiOkResponse({
+    description:
+      'When successfully retrieve transfer history for a given accounet',
+    type: [TransferHistoryItemDto],
+  })
+  @ApiBadRequestResponse({ description: 'When account id value is invalid' })
+  @ApiNotFoundResponse({ description: 'When the account is not found' })
+  @Get('/history/:accountId')
+  async getTransferHistory(
+    @Param() transferHistoryParams: TransferHistoryParams,
+  ): Promise<TransferHistoryItemDto[]> {
+    return this.transferService.getTransferHistoryByAccount(
+      +transferHistoryParams.accountId,
+    );
   }
 }

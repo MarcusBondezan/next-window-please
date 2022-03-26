@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Account, Transfer } from '@prisma/client';
-import { AccountWithCustomer, PrismaService } from '../prisma/prisma.service';
+import {
+  AccountWithCustomer,
+  PrismaService,
+  TransferWithCustomerData,
+} from '../prisma/prisma.service';
 import { AccountFacade } from '../account/account.facade';
 import {
   SameSourceAndTargetAccountException,
@@ -11,6 +15,8 @@ import {
 } from './exception';
 import { TransferInputDto } from './dto/transfer-input.dto';
 import { TransferResultDto } from './dto/transfer-result.dto';
+import { AccountNotFoundException } from '../shared/exception';
+import { TransferHistoryItemDto } from './dto/transfer-history-item.dto';
 
 @Injectable()
 export class TransferService {
@@ -148,5 +154,55 @@ export class TransferService {
       updatedBalance: sourceAccount.balance,
       transferDate: transfer.createdAt,
     } as TransferResultDto;
+  }
+
+  async getTransferHistoryByAccount(
+    accountId: number,
+  ): Promise<TransferHistoryItemDto[]> {
+    const account = await this.prisma.account.findUnique({
+      where: { id: accountId },
+    });
+
+    if (!account) {
+      throw new AccountNotFoundException();
+    }
+
+    const transfers = await this.findAllTransfersByAccount(accountId);
+
+    const transferHistory = this.buildTransferHistory(transfers, accountId);
+
+    return transferHistory;
+  }
+
+  private async findAllTransfersByAccount(
+    accountId: number,
+  ): Promise<TransferWithCustomerData[]> {
+    return this.prisma.transfer.findMany({
+      orderBy: { createdAt: 'desc' },
+      where: {
+        OR: [{ sourceAccountId: accountId }, { targetAccountId: accountId }],
+      },
+      include: {
+        sourceAccount: { include: { customer: true } },
+        targetAccount: { include: { customer: true } },
+      },
+    });
+  }
+
+  private buildTransferHistory(
+    transfers: TransferWithCustomerData[],
+    historyAccountId: number,
+  ): TransferHistoryItemDto[] {
+    return transfers.map((transfer) => {
+      const isTransferOut = transfer.sourceAccountId === historyAccountId;
+      return {
+        type: isTransferOut ? 'SENT' : 'RECEIVED',
+        involvedCustomer: isTransferOut
+          ? transfer.targetAccount.customer.name
+          : transfer.sourceAccount.customer.name,
+        amountTransferred: transfer.amount,
+        date: transfer.createdAt,
+      } as TransferHistoryItemDto;
+    });
   }
 }

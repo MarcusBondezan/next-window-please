@@ -7,6 +7,13 @@ export type AccountWithCustomer = Prisma.AccountGetPayload<{
   };
 }>;
 
+export type TransferWithCustomerData = Prisma.TransferGetPayload<{
+  include: {
+    sourceAccount: { include: { customer: true } };
+    targetAccount: { include: { customer: true } };
+  };
+}>;
+
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
   async onModuleInit() {

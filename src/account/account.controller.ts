@@ -17,7 +17,10 @@ import { GetAccountBalanceParams } from './dto/get-account-balance.params';
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}
 
-  @ApiOperation({ summary: 'Create account' })
+  @ApiOperation({
+    summary:
+      'Create a new bank account for a customer, with an initial deposit amount',
+  })
   @ApiCreatedResponse({
     description: 'When successfully created customer account',
     type: AccountDto,
@@ -34,7 +37,7 @@ export class AccountController {
     return AccountDto.fromAccount(account);
   }
 
-  @ApiOperation({ summary: 'Retrieve account balance' })
+  @ApiOperation({ summary: 'Retrieve balances for a given account' })
   @ApiOkResponse({
     description: 'When successfully retrieved account balance',
     type: AccountDto,
