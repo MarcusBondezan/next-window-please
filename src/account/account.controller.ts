@@ -8,8 +8,10 @@ export class AccountController {
   constructor(private readonly accountService: AccountService) {}
 
   @Post()
-  async create(@Body() createAccountDto: CreateAccountDto): Promise<AccountDto> {
-    const account = await this.accountService.create(createAccountDto);
+  async createAccount(
+    @Body() createAccountDto: CreateAccountDto,
+  ): Promise<AccountDto> {
+    const account = await this.accountService.createAccount(createAccountDto);
     return AccountDto.fromAccount(account);
   }
 }

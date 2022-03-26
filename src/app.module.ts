@@ -4,9 +4,6 @@ import { AccountModule } from './account/account.module';
 import { CustomerModule } from './customer/customer.module';
 
 @Module({
-  imports: [
-    AccountModule, 
-    CustomerModule
-  ],
+  imports: [AccountModule, CustomerModule],
 })
 export class AppModule {}

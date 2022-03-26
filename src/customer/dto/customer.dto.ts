@@ -1,4 +1,4 @@
-import { Customer } from "@prisma/client";
+import { Customer } from '@prisma/client';
 
 export class CustomerDto {
   id: number;
